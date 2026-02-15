@@ -1,6 +1,11 @@
-# SplitMint - Expense Splitting Application
+A modern, full-stack expense splitting application built with Next.js, PostgreSQL, and Prisma.
 
-A modern expense splitting application built with Next.js, PostgreSQL, and Prisma.
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Site-brightgreen?style=for-the-badge)](https://splitmint-livid.vercel.app)
+
+## 🌐 Live Application
+
+**🔗 [View Live App](https://splitmint-livid.vercel.app)**
+
 
 ## Features
 
