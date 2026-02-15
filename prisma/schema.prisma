@@ -1,0 +1,87 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  createdAt     DateTime @default(now()) @map("created_at")
+  
+  groups        Group[]
+  groupMembers  GroupMember[]
+  
+  @@map("users")
+}
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  createdBy   String   @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  creator     User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  members     GroupMember[]
+  expenses    Expense[]
+  
+  @@map("groups")
+}
+
+model GroupMember {
+  id            String   @id @default(cuid())
+  groupId       String   @map("group_id")
+  userId        String?  @map("user_id")
+  name          String
+  avatarColor   String   @default("#3B82F6") @map("avatar_color")
+  isPrimaryUser Boolean  @default(false) @map("is_primary_user")
+  
+  group         Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  expensesPaid  Expense[] @relation("ExpensePayer")
+  expenseSplits ExpenseSplit[]
+  
+  @@map("group_members")
+}
+
+enum SplitType {
+  EQUAL
+  CUSTOM
+  PERCENTAGE
+}
+
+model Expense {
+  id          String    @id @default(cuid())
+  groupId     String    @map("group_id")
+  payerId     String    @map("payer_id")
+  amount      Decimal   @db.Decimal(10, 2)
+  description String
+  date        DateTime  @default(now())
+  splitType   SplitType @default(EQUAL) @map("split_type")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  group       Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  payer       GroupMember @relation("ExpensePayer", fields: [payerId], references: [id])
+  splits      ExpenseSplit[]
+  
+  @@map("expenses")
+}
+
+model ExpenseSplit {
+  id            String      @id @default(cuid())
+  expenseId     String      @map("expense_id")
+  participantId String      @map("participant_id")
+  shareAmount   Decimal     @db.Decimal(10, 2) @map("share_amount")
+  
+  expense       Expense     @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  participant   GroupMember @relation(fields: [participantId], references: [id])
+  
+  @@map("expense_splits")
+}
